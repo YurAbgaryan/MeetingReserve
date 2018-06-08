@@ -6,6 +6,23 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionBarStyle">@style/action_bar_gradient</item>
+    </style>
+
+    <style name="action_bar_gradient" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@drawable/gradient_180_bg</item>
+        <item name="background">@drawable/gradient_180_bg</item>
+    </style>
+
+    <style name="AppNoActionBarTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:background">@drawable/gradient_270_bg</item>
+        <item name="background">@drawable/gradient_270_bg</item>
+    </style>
+
+    <style name="Theme.Material_Gradient" parent="Theme.AppCompat.Light">
+        <item name="android:background">@drawable/gradient_270_bg</item>
+        <item name="background">@drawable/gradient_270_bg</item>
     </style>
 
 </resources>
