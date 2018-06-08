@@ -20,9 +20,10 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
+    implementation 'com.google.android.gms:play-services-vision:15.0.2'
 
     compile 'com.google.firebase:firebase-core:16.0.0'
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0'
