@@ -198,12 +198,12 @@ public class MainActivity extends AppCompatActivity {
 
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
-			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+			public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
 				Log.d(TAG, response.message() + "   " + response.toString());
 			}
 
 			@Override
-			public void onFailure(Call<JsonObject> call, Throwable t) {
+			public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
 				Log.d(TAG, "failed:  " + t.getMessage());
 			}
 		});
