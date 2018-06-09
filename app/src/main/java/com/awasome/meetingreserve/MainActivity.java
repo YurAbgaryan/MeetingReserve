@@ -57,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		Intent intent = new Intent(this, RoomActivity.class);
+		startActivity(intent);
+
 		mAuth = FirebaseAuth.getInstance();
 		mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
 			@Override
