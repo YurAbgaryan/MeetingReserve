@@ -10,13 +10,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by yuri on 6/8/18.
  */
 
-public class ApiFactory {
+public class ApiService {
 	public static final String BASE_URL = "http://192.168.40.207:8080/";
-	private static ApiFactory instance;
+	private static ApiService instance;
 
-	public static ApiFactory getInstance() {
+	public static ApiService getInstance() {
 		if (instance == null) {
-			instance = new ApiFactory();
+			instance = new ApiService();
 		}
 
 		return instance;
@@ -30,6 +30,10 @@ public class ApiFactory {
 				.build();
 
 		return retrofit;
+	}
+
+	public ServerInterface getServiceInterface() {
+		return getRetrofit(BASE_URL).create(ServerInterface.class);
 	}
 
 	private OkHttpClient getHTTPClient() {

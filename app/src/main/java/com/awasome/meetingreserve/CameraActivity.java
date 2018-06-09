@@ -16,6 +16,7 @@ import android.graphics.YuvImage;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +33,11 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.google.gson.JsonObject;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -41,7 +47,16 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.http.Multipart;
 
 import static org.opencv.imgcodecs.Imgcodecs.CV_IMWRITE_PAM_FORMAT_GRAYSCALE;
 
@@ -53,6 +68,7 @@ public class CameraActivity extends AppCompatActivity {
 	private CameraSourcePreview mPreview;
 	private GraphicOverlay mGraphicOverlay;
 	File folder;
+	File zipFolder;
 
 	private static final int RC_HANDLE_GMS = 9001;
 	// permission request codes need to be < 256
@@ -70,10 +86,17 @@ public class CameraActivity extends AppCompatActivity {
 		super.onCreate(icicle);
 		setContentView(R.layout.activity_camera);
 		folder = new File(getApplicationContext().getFilesDir(), "faces");
+		zipFolder = new File(getApplicationContext().getFilesDir(), "faces.zip");
 		if (!folder.exists()) {
 			folder.mkdirs();
 		}
 
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				finish();
+			}
+		}, 5000);
 		mPreview = findViewById(R.id.preview);
 		mGraphicOverlay = findViewById(R.id.faceOverlay);
 
@@ -134,13 +157,48 @@ public class CameraActivity extends AppCompatActivity {
 				.build();
 
 		// This is how you merge myFaceDetector and google.vision detector
-		MyFaceDetector myFaceDetector = new MyFaceDetector(detector, new Runnable() {
+		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
-				mCameraSource.release();
-				finish();
+				if (mCameraSource != null) {
+					mCameraSource.release();
+				}
+				try {
+					if (zipFolder.exists()) {
+						zipFolder.delete();
+					}
+					ZipFile zipFile = new ZipFile(zipFolder);
+					ArrayList<File> files = new ArrayList<>();
+					for (File file : folder.listFiles()) {
+						files.add(file);
+					}
+					zipFile.createZipFile(files, new ZipParameters());
+				} catch (ZipException e) {
+					e.printStackTrace();
+				}
+
+				MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", zipFolder.getName(), RequestBody.create(MediaType.parse("application/zip"), zipFolder));
+				ApiService.getInstance().getRetrofit(ApiService.BASE_URL).create(ServerInterface.class).postImage(filePart).enqueue(new Callback<Void>() {
+					@Override
+					public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+						Log.d(TAG, "success");
+						finish();
+					}
+
+					@Override
+					public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+						t.printStackTrace();
+						finish();
+					}
+				});
+
 			}
-		});
+		};
+		if (folder.list().length >= 15) {
+			runnable.run();
+		}
+
+		MyFaceDetector myFaceDetector = new MyFaceDetector(detector, runnable);
 
 
 		if (!detector.isOperational()) {
@@ -308,7 +366,7 @@ public class CameraActivity extends AppCompatActivity {
 					Utils.bitmapToMat(rotatedBitmap, currentMat);
 					if (helper.detect(currentMat) == 1) {
 						Imgcodecs.imwrite(new File(folder, UUID.randomUUID() + ".jpg").getAbsolutePath(), currentMat, new MatOfInt(CV_IMWRITE_PAM_FORMAT_GRAYSCALE));
-						if (folder.list().length == 21 && callback != null) {
+						if (folder.list().length >= 15 && callback != null) {
 							callback.run();
 						}
 					}
@@ -318,19 +376,6 @@ public class CameraActivity extends AppCompatActivity {
 			});
 
 			return mDelegate.detect(frame);
-		}
-
-		@Override
-		public void setProcessor(Processor<Face> processor) {
-			super.setProcessor(processor);
-			mDelegate.setProcessor(processor);
-		}
-
-		@Override
-		public void receiveFrame(Frame frame) {
-			super.receiveFrame(frame);
-			Log.d(TAG, "recive ");
-			mDelegate.receiveFrame(frame);
 		}
 
 		public boolean isOperational() {

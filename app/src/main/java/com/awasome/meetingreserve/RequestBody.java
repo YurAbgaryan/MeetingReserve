@@ -15,10 +15,10 @@ public class RequestBody {
 	@SerializedName("token")
 	private String token;
 
-	@SerializedName("start_time")
+	@SerializedName("startTime")
 	private Long start_time;
 
-	@SerializedName("end_time")
+	@SerializedName("endTime")
 	private Long end_time;
 
 	@SerializedName("participants")
@@ -27,6 +27,9 @@ public class RequestBody {
 	@SerializedName("location")
 	private String location;
 
+	@SerializedName("id")
+	private String id;
+
 	public static class Builder {
 		private String email;
 		private String token;
@@ -34,6 +37,7 @@ public class RequestBody {
 		private Long end_time;
 		private ArrayList<String> participants;
 		private String location;
+		private String id;
 
 		public Builder() {
 
@@ -66,6 +70,11 @@ public class RequestBody {
 
 		public Builder setLocation(String location) {
 			this.location = location;
+			return this;
+		}
+
+		public Builder setId(String location) {
+			this.id = id;
 			return this;
 		}
 

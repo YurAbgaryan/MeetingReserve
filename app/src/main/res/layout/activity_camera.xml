@@ -8,16 +8,16 @@
     android:keepScreenOn="true"
     android:orientation="vertical">
 
-    <com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview
+    <com.awasome.meetingreserve.camera.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.gms.samples.vision.face.facetracker.ui.camera.GraphicOverlay
+        <com.awasome.meetingreserve.camera.GraphicOverlay
             android:id="@+id/faceOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-    </com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview>
+    </com.awasome.meetingreserve.camera.CameraSourcePreview>
 
 </LinearLayout>

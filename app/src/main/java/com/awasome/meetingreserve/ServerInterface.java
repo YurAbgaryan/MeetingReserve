@@ -8,8 +8,14 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
-import retrofit2.http.*;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
 
 public interface ServerInterface {
 
@@ -30,4 +36,8 @@ public interface ServerInterface {
 	@Headers("Content-Type: application/json")
 	@POST("/signin")
 	Call<JsonObject> sendToken(@retrofit2.http.Body JsonObject body);
+
+	@Multipart
+	@POST("/image")
+	Call<Void> postImage(@Part MultipartBody.Part filePart);
 }

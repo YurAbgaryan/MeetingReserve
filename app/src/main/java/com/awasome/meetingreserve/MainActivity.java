@@ -1,6 +1,7 @@
 package com.awasome.meetingreserve;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,24 +9,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +38,7 @@ import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
 	public static final int RC_SIGN_IN = 123;
+	public static final int RC_CAMERA = 111;
 	public static final String TAG = "lalala";
 	public static String userToken = null;
 
@@ -57,31 +58,32 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		Intent intent = new Intent(this, RoomActivity.class);
-		startActivity(intent);
-
-		mAuth = FirebaseAuth.getInstance();
-		mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+		if (GoogleSignIn.getLastSignedInAccount(this) != null) {
+			startActivity(new Intent(this, MainFlowActivity.class));
+		}
+		findViewById(R.id.btn_action).setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-				if (firebaseAuth.getCurrentUser() == null) {
-					Log.d(TAG, "starting register");
-					startActivityForResult(new Intent(MainActivity.this, RegisterActivity.class), RC_SIGN_IN);
-				}
+			public void onClick(View v) {
+				startActivity(new Intent(MainActivity.this, MainFlowActivity.class));
 			}
 		});
+
 		gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-				.requestIdToken(getString(R.string.default_web_client_id))
+				.requestScopes(new Scope(Scopes.DRIVE_APPFOLDER))
+				.requestServerAuthCode(getResources().getString(R.string.web_client_id))
 				.requestEmail()
 				.build();
 
+		if (GoogleSignIn.getLastSignedInAccount(this) == null) {
+			Log.d(TAG, "user not signin");
+			startActivityForResult(new Intent(this, RegisterActivity.class), RC_SIGN_IN);
+		}
 
 		signOutBtn = findViewById(R.id.sign_out_btn);
 		signOutBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mAuth.signOut();
+				//mAuth.signOut();
 
 				GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(MainActivity.this, gso);
 				mGoogleSignInClient.signOut()
@@ -89,6 +91,9 @@ public class MainActivity extends AppCompatActivity {
 							@Override
 							public void onComplete(@NonNull Task<Void> task) {
 								Log.d(TAG, "user signed out");
+								SharedPreferences.Editor editor = getSharedPreferences("mypref", MODE_PRIVATE).edit();
+								editor.putString("uid", null).apply();
+								startActivityForResult(new Intent(MainActivity.this, CameraActivity.class), RC_SIGN_IN);
 							}
 						});
 			}
@@ -99,16 +104,21 @@ public class MainActivity extends AppCompatActivity {
 		participants.add("sdasd");
 		participants.add("sdasd");
 
+		SharedPreferences editor = getSharedPreferences("mypref", MODE_PRIVATE);
+		String uid = editor.getString("uid", null);
+		String auth = editor.getString("auth", null);
 
-		Retrofit retrofit = ApiFactory.getInstance().getRetrofit(ApiFactory.BASE_URL);
-		ServerInterface serverInterface = retrofit.create(ServerInterface.class);
 
+		ServerInterface serverInterface = ApiService.getInstance().getServiceInterface();
+		Log.d(TAG, "Uid: " + uid);
 		RequestBody requestBody = new RequestBody.Builder()
-				.setEmail("blah@mail.ru")
+				.setEmail("yuri.abgaryan@picsart.com")
 				.setEndTime(System.currentTimeMillis())
 				.setStartTime(System.currentTimeMillis())
 				.setParticipants(participants)
 				.setLocation("Van Gogh")
+				.setId(uid)
+				.setToken(auth)
 				.build();
 
 		Gson gson = new Gson();
@@ -136,10 +146,6 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		FirebaseUser currentUser = mAuth.getCurrentUser();
-		if (currentUser == null) {
-			//startActivity(new Intent(this, RegisterActivity.class));
-		}
 	}
 
 //	private void openSignInActivity() {
@@ -164,27 +170,34 @@ public class MainActivity extends AppCompatActivity {
 			IdpResponse response = IdpResponse.fromResultIntent(data);
 			Log.d(TAG, "response Signin");
 
-			if (resultCode == RegisterActivity.RESULT_CODE_SIGN_IN) {
-				Log.d(TAG, "signinSuceed");
-				// Successfully signed in
-				FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-				user.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-					@Override
-					public void onComplete(@NonNull Task<GetTokenResult> task) {
-						if (task.isSuccessful()) {
-							userToken = task.getResult().getToken();
-							Log.d(TAG, userToken);
-							sendUserToken();
-							Log.d(TAG, "autorization successed");
-						} else {
-							Log.d(TAG, "autorization failed");
-						}
-					}
-				});
+			if (requestCode == RC_SIGN_IN) {
+				if (GoogleSignIn.getLastSignedInAccount(this) != null) {
+					startActivityForResult(new Intent(this, CameraActivity.class), RC_CAMERA);
+				}
+//				Log.d(TAG, "signinSuceed");
+//				// Successfully signed in
+//				FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//				if (user != null) {
+//					user.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+//						@Override
+//						public void onComplete(@NonNull Task<GetTokenResult> task) {
+//							if (task.isSuccessful()) {
+//								userToken = task.getResult().getToken();
+//								Log.d(TAG, userToken);
+//								sendUserToken();
+//								startActivityForResult(new Intent(MainActivity.this, CameraActivity.class), RC_CAMERA);
+//								Log.d(TAG, "autorization successed");
+//							} else {
+//								Log.d(TAG, "autorization failed");
+//							}
+//						}
+//					});
+//				}
 
-			} else {
-				Log.d("lalala", "signin failed");
+			} else if (requestCode == RC_CAMERA) {
+				Toast.makeText(this, "URAAAAAAAAAA", Toast.LENGTH_SHORT);
 			}
+				Log.d("lalala", "signin failed");
 	}
 
 	private void sendUserToken() {
@@ -193,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
 				.setEmail(user.getEmail())
 				.setToken(userToken)
 				.build();
-		Retrofit retrofit = ApiFactory.getInstance().getRetrofit(ApiFactory.BASE_URL);
-		ServerInterface serverInterface = retrofit.create(ServerInterface.class);
+
+		ServerInterface serverInterface = ApiService.getInstance().getServiceInterface();
 		Gson gson = new Gson();
 		JsonObject object = gson.toJsonTree(body).getAsJsonObject();
 
@@ -202,12 +215,12 @@ public class MainActivity extends AppCompatActivity {
 
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
-			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+			public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
 				Log.d(TAG, response.message() + "   " + response.toString());
 			}
 
 			@Override
-			public void onFailure(Call<JsonObject> call, Throwable t) {
+			public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
 				Log.d(TAG, "failed:  " + t.getMessage());
 			}
 		});
