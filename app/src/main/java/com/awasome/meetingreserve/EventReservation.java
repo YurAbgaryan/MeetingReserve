@@ -18,8 +18,7 @@ public class EventReservation extends AppCompatActivity {
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_reservation);
-		dateBtn =findViewById(R.id.date_btn);
+		setContentView(R.layout.activity_event);
 
 		dateBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
