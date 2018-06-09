@@ -17,6 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    signingConfigs {
+        debug {
+            storeFile file('../../../../.android/debug.keystore')
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storePassword 'android'
+        }
+    }
 }
 
 dependencies {
@@ -30,6 +38,8 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-core:16.0.0'
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0'
+    compile 'com.google.android.gms:play-services-auth:15.0.1'
+
 
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'

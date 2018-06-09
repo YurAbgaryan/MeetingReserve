@@ -19,23 +19,19 @@ public class RoomActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
+        if (getSupportActionBar() != null && getIntent() != null && getIntent().getStringExtra("roomName") != null ) {
+            getSupportActionBar().setTitle(getIntent().getStringExtra("roomName"));
+        }
+
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
-        arrayList.add("adsad");
+        arrayList.add("Board Meeting");
+        arrayList.add("Staff");
+        arrayList.add("Checkin");
+
 
 
         RecyclerView recyclerView = findViewById(R.id.event_recycle);
-        AdapterExample adapter = new AdapterExample(arrayList, R.layout.card_item);
+        AdapterExample adapter = new AdapterExample(arrayList, R.layout.card_item, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter.notifyDataSetChanged();

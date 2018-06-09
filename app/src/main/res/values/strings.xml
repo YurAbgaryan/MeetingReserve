@@ -17,5 +17,9 @@
     <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
     <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
+    <string name="web_client_id">668843241639-foiij0j3ctj47hskqtfd0mhb2on3obvs.apps.googleusercontent.com</string>
+    <string name="title_activity_main_flow">Reservoir</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 
 </resources>

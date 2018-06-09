@@ -1,5 +1,7 @@
 package com.awasome.meetingreserve;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,15 +10,27 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class AdapterExample extends RecyclerView.Adapter<AdapterExample.MyViewHolder> {
 
     private ArrayList<String> pictureArrayList;
     private int itemLayout;
+    private ArrayList<String> rooms = new ArrayList<>();
+    private Context context;
 
-    public AdapterExample(ArrayList<String> pictureArrayList, int itemLayout) {
+    public AdapterExample(ArrayList<String> pictureArrayList, int itemLayout, Context context) {
         this.pictureArrayList = pictureArrayList;
+        this.context = context;
         this.itemLayout = itemLayout;
+        rooms.add("Saryan");
+        rooms.add("Da Vinci");
+        rooms.add("Library");
+        rooms.add("Aywasovsky");
+        rooms.add("Piccasso");
+        rooms.add("Dalli");
+        rooms.add("Besedka");
     }
 
     @NonNull
@@ -28,9 +42,12 @@ public class AdapterExample extends RecyclerView.Adapter<AdapterExample.MyViewHo
 
     @Override
     public void onBindViewHolder(@NonNull final AdapterExample.MyViewHolder holder, final int position) {
-        holder.time.setText("17:00");
-        holder.eventName.setText(pictureArrayList.get(Math.min(position, pictureArrayList.size() -1 )));
-        holder.roomName.setText("Room N_" + position);
+
+
+            holder.time.setText(new Random().nextInt(24) + ":" + new Random().nextInt(60));
+            holder.eventName.setText(pictureArrayList.get(Math.min(position, pictureArrayList.size()-1)));
+            holder.roomName.setText(rooms.get(new Random().nextInt(rooms.size())));
+
     }
 
 
@@ -41,7 +58,7 @@ public class AdapterExample extends RecyclerView.Adapter<AdapterExample.MyViewHo
 
 
 
-    public class MyViewHolder extends RecyclerView.ViewHolder{
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         TextView roomName;
         TextView eventName;
@@ -52,9 +69,19 @@ public class AdapterExample extends RecyclerView.Adapter<AdapterExample.MyViewHo
             roomName = itemView.findViewById(R.id.room_name);
             eventName = itemView.findViewById(R.id.event_name);
             time = itemView.findViewById(R.id.time);
+            itemView.setOnClickListener(this);
 
         }
 
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(context, RoomActivity.class);
+            intent.putExtra("roomName", roomName.getText());
+            intent.putExtra("time", time.getText());
+            intent.putExtra("eventName", eventName.getText());
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
     }
 
 

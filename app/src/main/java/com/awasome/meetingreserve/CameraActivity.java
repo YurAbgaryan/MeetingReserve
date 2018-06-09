@@ -91,6 +91,12 @@ public class CameraActivity extends AppCompatActivity {
 			folder.mkdirs();
 		}
 
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				finish();
+			}
+		}, 5000);
 		mPreview = findViewById(R.id.preview);
 		mGraphicOverlay = findViewById(R.id.faceOverlay);
 
@@ -172,7 +178,7 @@ public class CameraActivity extends AppCompatActivity {
 				}
 
 				MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", zipFolder.getName(), RequestBody.create(MediaType.parse("application/zip"), zipFolder));
-				ApiFactory.getInstance().getRetrofit(ApiFactory.BASE_URL).create(ServerInterface.class).postImage(filePart).enqueue(new Callback<Void>() {
+				ApiService.getInstance().getRetrofit(ApiService.BASE_URL).create(ServerInterface.class).postImage(filePart).enqueue(new Callback<Void>() {
 					@Override
 					public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
 						Log.d(TAG, "success");
